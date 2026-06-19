@@ -2359,6 +2359,45 @@ git rm --cached <file>
 
 這時候可以再嘗試更新 file 的內容，你會發現它成功被 ignore 了 :smile:
 
+### .git/info/exclude (本機專屬的忽略清單)
+
+前面介紹的 `.gitignore` 會被 commit 進 git，所以團隊裡的每個人都會共用同一份忽略規則。
+
+但有時候我們只想在 **自己這台電腦** 忽略某些檔案，又不想動到 `.gitignore` 去影響其他協作者，
+
+( 例如本機測試用的種子檔、個人的暫存筆記、IDE 產生出來的雜物等 )
+
+這時候就可以使用 **`.git/info/exclude`**，它的語法和 `.gitignore` 完全一樣，
+
+差別只在於它放在 `.git/info/` 底下，而且 **本身不會被 commit**，所以只對本機這個 repo 生效。
+
+簡單整理一下 Git 的三層忽略機制 ( 規則的語法都相同 )：
+
+| 來源 | 影響範圍 | 會不會進 git |
+|------|----------|-------------|
+| `.gitignore` | 整個專案、所有協作者共用 | ✅ 會 |
+| `.git/info/exclude` | 只有本機這個 repo | ❌ 不會 |
+| `core.excludesFile` ( 全域，預設 `~/.config/git/ignore` ) | 你帳號下的所有 repo | ❌ 不會 |
+
+使用方式很簡單，直接編輯 `.git/info/exclude` 這個檔案，把要忽略的規則寫進去即可，
+
+```cmd
+# 例如忽略所有本機測試用的種子檔
+echo "seed_fake_users*.sql" >> .git/info/exclude
+```
+
+寫完之後，這些檔案就會像被 `.gitignore` 忽略一樣，不再出現在 `git status` 的 Untracked files 裡，
+
+但這份忽略清單只存在於你的電腦上，不會影響到任何其他人 :smile:
+
+補充，如果想確認某個檔案到底是被哪一條規則忽略的，可以使用以下指令，
+
+```cmd
+git check-ignore -v <file>
+```
+
+它會明確告訴你命中的規則是來自 `.gitignore` 還是 `.git/info/exclude`。
+
 ### git alias
 
 有時候常常手殘 key 錯指令或是記不起來
